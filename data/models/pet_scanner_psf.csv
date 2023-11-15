@@ -1,0 +1,29 @@
+Manufacturer,Scanner,8 mm FWHM,XY smoothing,Z smoothing,,Effective Resolution,in-plane,axial
+Siemens,HRRT,,6.0,6.0,,,4.5,4.5
+Siemens,BioGraph 1080,,5.5,5.5,,,5.5,5.5
+Siemens,BioGraph TruePoint (1093/1094),,5.5,5.5,,,5.5,5.5
+Siemens,BioGraph mCT,,5.5,5.5,,,5.5,5.5
+Philips,GemTF Sharp,,4.5,5.0,,,5.5,5.5
+Siemens,ECAT Exact HR+,,5.0,5.0,,,6.0,6.0
+Siemens,ECAT Exact HR,,5.5,3.5,,,5.5,7.0
+GE,Disc600_3D IR,,5.5,5.0,,,5.5,6.0
+GE,Disc600_RP,,5.0,3.5,,,6.0,7.0
+GE,Disc690_3D IR,,5.5,5.0,,,5.5,6.0
+GE,Disc690_RP,,5.0,3.5,,,6.0,7.0
+GE,DiscRX_3D IR,,5.5,5.0,,,5.5,6.0
+GE,DiscRX RP,,5.0,3.5,,,6.0,7.0
+GE,DiscSTE_3D IR,,5.5,5.0,,,5.5,6.0
+GE,DiscSTE_RP,,5.0,3.5,,,6.0,7.0
+GE,DiscST_3D IR,,5.0,5.0,,,6.0,6.0
+GE,DiscST_FORE 2D IR,,3.0,3.5,,,7.5,7.0
+GE,DiscST_RP,,3.5,3.5,,,7.0,7.0
+GE,DiscLS_FORE 2D IR,,4.5,3.0,,,6.5,7.0
+GE,DiscLS_RP,,5.0,2.0,,,6.0,7.5
+GE,Advance_FORE 2D IR,,4.5,3.0,,,6.5,7.0
+GE,Advance_RP,,5.0,2.0,,,6.0,7.5
+Philips,Allegro,,3.0,3.0,,,7.5,7.5
+Philips,Gemini GXL,,3.0,3.0,,,7.5,7.5
+Philips,Gemini,,3.0,3.0,,,7.5,7.5
+Siemens,BioGraph (47 slice),,2.0,3.0,,,7.5,7.0
+Siemens,ECAT Accel,,2.0,3.0,,,7.5,7.0
+Siemens,ECAT Exact,,2.0,3.0,,,7.5,7.0

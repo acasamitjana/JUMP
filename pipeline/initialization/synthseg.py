@@ -1,4 +1,3 @@
-import os
 from os.path import exists, dirname, join, basename
 from os import makedirs
 from argparse import ArgumentParser
@@ -7,12 +6,10 @@ import nibabel as nib
 import csv
 import numpy as np
 import bids
-from joblib import delayed, Parallel
 
-import tensorflow as tf
 
 from setup import *
-from utils.labels import POST_AND_APARC_ARR
+from utils.labels import SYNTHSEG_APARC_LUT
 from utils.io_utils import write_json_derivatives
 
 
@@ -29,7 +26,7 @@ def sbj2seg(subject_list):
         for image_file in image_file_list:
             if image_file.entities['suffix'] not in VALID_MODALITIES: continue
 
-            synthseg_dirname = join(DIR_PIPELINES['synthseg'], 'sub-' + subject,
+            synthseg_dirname = join(DIR_PIPELINES['seg'], 'sub-' + subject,
                                     'ses-' + image_file.entities['session'], image_file.entities['datatype'])
             if not exists(synthseg_dirname): makedirs(synthseg_dirname)
 
@@ -69,9 +66,8 @@ def sbj2seg(subject_list):
             if not exists(join(bids_dirname, anat_input)): continue
             # if np.prod(nib.load(join(bids_dirname, anat_input)).shape) >= 192*256*256: continue
 
-            anat_res = basename(
-                bids_loader.build_path({**entities, **{'acquisition': '1'}}, path_patterns=BIDS_PATH_PATTERN,
-                                       validate=False))
+            anat_res = basename(bids_loader.build_path({**entities, **{'acquisition': '1'}},
+                                                       path_patterns=BIDS_PATH_PATTERN, validate=False))
             anat_seg = anat_res.replace(entities['suffix'], entities['suffix'] + 'dseg')
             anat_vols = anat_seg.replace('nii.gz', 'tsv')
             if exists(join(bids_dirname, anat_input)) and (not exists(join(synthseg_dirname, anat_seg)) or force_flag):
@@ -86,7 +82,7 @@ def sbj2seg(subject_list):
     return input_files, res_files, output_files, vol_files
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     print('\n\n\n\n\n')
     print('# --------------------- #')
     print('# Bold to MRI pipeline  #')
@@ -95,13 +91,25 @@ if __name__ == 'main':
 
     parser = ArgumentParser(description="PET-MRI synthesis", epilog='\n')
     parser.add_argument("--bids", default=BIDS_DIR, help="Bids root directory, including rawdata")
+    parser.add_argument('--subjects', default=None, nargs='+', help="(optional) specify which subjects to process")
     parser.add_argument("--force", action='store_true', help="Force the script to overwriting existing segmentations in the derivatives/synthseg directory.")
 
     args = parser.parse_args()
     bids_dir = args.bids
+    init_subject_list = args.subjects
     force_flag = args.force
 
-    print('\nReading dataset.')
+    print('\n\n########################')
+    if force_flag is True:
+        print('Running SynthSeg over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
+    else:
+        print('Running SynthSeg over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+        if init_subject_list is not None:
+            print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
+    print('########################')
+
+
+    print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')
     if not exists(db_file):
         bids_loader = bids.layout.BIDSLayout(root=bids_dir, validate=False)
@@ -110,9 +118,10 @@ if __name__ == 'main':
         bids_loader = bids.layout.BIDSLayout(root=bids_dir, validate=False, database_path=db_file)
 
     bids_loader.add_derivatives(DIR_PIPELINES['pet-mri'])
-    bids_loader.add_derivatives(DIR_PIPELINES['bold-mri'])
+    if DIR_PIPELINES['bold-mri'] != DIR_PIPELINES['pet-mri']:
+        bids_loader.add_derivatives(DIR_PIPELINES['bold-mri'])
     bids_loader.add_derivatives(DIR_PIPELINES['seg'])
-    subject_list = bids_loader.get_subjects()
+    subject_list = bids_loader.get_subjects() if init_subject_list is None else init_subject_list
 
     input_files, res_files, output_files, vol_files = sbj2seg(subject_list)
 
@@ -182,10 +191,9 @@ if __name__ == 'main':
     for i, r in zip(input_files, res_files):
         if exists(r.replace('nii.gz', 'json')): continue
         if not exists(r) and exists(i):
-            try:
-                subprocess.call(['ln', '-s', i, r])
-            except:
-                subprocess.call(['cp', i, r])
+            rcode = subprocess.call(['ln', '-s', i, r], stderr=subprocess.PIPE)
+            if rcode != 0:
+                subprocess.call(['cp', i, r], stderr=subprocess.PIPE)
 
         proxy = nib.load(r)
         aff = proxy.affine
@@ -251,8 +259,8 @@ if __name__ == 'main':
                 info = [r for r in row[None][0].split(' ') if r != '']
                 if len(info) < 5: continue
                 try:
-                    fs_lut[int(info[0])] = {'name': info[1].lower().replace('-', ' '), 'R': info[2], 'G': info[3],
-                                            'B': info[4]}
+                    name = info[1].lower().replace('-', ' ')
+                    fs_lut[int(info[0])] = {'name': name, 'R': info[2], 'G': info[3], 'B': info[4]}
                 except:
                     continue
 
@@ -261,7 +269,7 @@ if __name__ == 'main':
             {'index': label, 'name': fs_lut[label]['name'],
              'abbreviation': labels_abbr[label] if label in labels_abbr else fs_lut[label]['name'],
              'R': fs_lut[label]['R'], 'G': fs_lut[label]['G'], 'B': fs_lut[label]['B'], 'mapping': it_label}
-            for it_label, label in enumerate(POST_AND_APARC_ARR)
+            for it_label, label in SYNTHSEG_APARC_LUT.items()
         ]
 
         with open(join(DIR_PIPELINES['seg'], 'synthseg_lut.txt'), 'w') as csvfile:
