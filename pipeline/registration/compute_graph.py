@@ -42,7 +42,7 @@ if __name__ == '__main__':
     if force_flag is True:
         print('Running JUMP registration over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where output is missing.')
 
     if init_subject_list is not None:
         print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         for it_subject, subject in enumerate(subject_list):
             t_init = time.time()
             try:
-                solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs)
+                solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=force_flag)
             except:
                 failed_subjects.append(subject)
             print('Total computation time: ' + str(np.round(time.time() - t_init, 2)) + '\n')

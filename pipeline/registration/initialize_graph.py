@@ -60,8 +60,6 @@ def register(subject, force_flag=False):
                                                      absolute_paths=False, path_patterns=BIDS_PATH_PATTERN)
             np.save(join(DIR_PIPELINES['seg'], im_cog_filename.replace('nii.gz', 'npy')), Tc)
 
-
-
             modality_proxies[modality] = outproxy
 
         if all([exists(join(deformations_dir, str(mod_ref) + '_to_' + str(mod_flo) + '.aff')) for mod_ref, mod_flo in
@@ -110,7 +108,7 @@ if __name__ == '__main__':
     if force_flag is True:
         print('Running JUMP registration over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where output is missing.')
     if init_subject_list is not None:
         print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')

@@ -48,7 +48,7 @@ def compute_subject_template(subject, verbose=True):
 
                 affine_file = bids_loader.get(**aff_dict, **mod_kwargs, session= tp_id)
                 if len(affine_file) != 1:
-                    if verbose: print('     !! [error] Wrong affine file entities.')
+                    if verbose: print('     !! [error] wrong affine file entities.')
                     failed_s.append(sbj_str + '_' + sess_str)
                     continue
 
@@ -82,7 +82,7 @@ def compute_subject_template(subject, verbose=True):
                 continue
 
             proxytemplate = nib.Nifti1Image(np.zeros(template_size), template_vox2ras0)
-            nib.save(proxytemplate,  session_template)
+            nib.save(proxytemplate, session_template)
 
             if verbose: print('   [done] Total Elapsed time: ' + str(time.time() - t_init) + '\n')
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     if force_flag is True:
         print('Running JUMP registration over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where output is missing.')
     if init_subject_list is not None:
         print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')

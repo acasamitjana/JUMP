@@ -277,7 +277,7 @@ if __name__ == '__main__':
         print('Running PET pre-processing over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
         print(
-            'Running PET pre-processing over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+            'Running PET pre-processing over the dataset in ' + bids_dir + ', only on files where output is missing.')
         if init_subject_list is not None:
             print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')

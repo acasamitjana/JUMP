@@ -134,7 +134,7 @@ def solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=Fals
 
 
                 cog_T = np.load(cog_list[it_mod])
-                affine_matrix = cog_T @ Tres[..., it_mod]
+                affine_matrix = np.linalg.inv(cog_T) @ Tres[..., it_mod]
 
                 if not exists(join(DIR_PIPELINES['jump-reg'], dirname(fname_aff))):
                     makedirs(join(DIR_PIPELINES['jump-reg'], dirname(fname_npy)))

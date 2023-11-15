@@ -82,7 +82,7 @@ if __name__ == '__main__':
     if force_flag is True:
         print('Running PET-MRI synthesis over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
-        print('Running PET-MRI synthesis over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+        print('Running PET-MRI synthesis over the dataset in ' + bids_dir + ', only on files where output is missing.')
         if init_subject_list is not None:
             print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')
@@ -101,11 +101,11 @@ if __name__ == '__main__':
     if args.num_cores == 1:
         for it_s, subject in enumerate(subject_list):
             print('Subject: ' + subject + ' (' + str(it_s) + '/' + str(len(subject_list)) + ')')
-            process_subject(subject, it_s, force_flag=force_flag)
+            process_subject(subject, bids_loader, force_flag=force_flag)
     else:
         print('Running N=' + str(len(subject_list)) + ' in parallel using ' + str(args.num_cores) + ' jobs.')
         results = Parallel(n_jobs=args.num_cores, backend="threading")(
-            delayed(process_subject)(subject, it_subject) for it_subject, subject in enumerate(subject_list))
+            delayed(process_subject)(subject, bids_loader) for it_subject, subject in enumerate(subject_list))
 
     print('\n')
     print('# --------- FI (Bold to MRI pipeline) --------- #')

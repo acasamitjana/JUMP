@@ -203,8 +203,7 @@ if __name__ == 'main':
     if force_flag is True:
         print('Running JUMP registration over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where segmentation is '
-                                                                            'missing.')
+        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where output is missing.')
     if init_subject_list is not None:
         print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########')

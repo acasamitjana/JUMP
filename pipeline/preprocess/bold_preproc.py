@@ -1,4 +1,5 @@
 import os
+import pdb
 from os import listdir, makedirs
 from os.path import join, exists, dirname, basename
 from argparse import ArgumentParser
@@ -85,6 +86,11 @@ def process_subject(subject, bold_params, tmp_proc_dir, tmp_field_dir):
 
         # CHEKING IF ALREADY EXISTS
         if exists(join(DIR_PIPELINES['bold-prep'], filepath_bold)) and not force_flag:
+            if file4ICA['im'] is None:
+                file4ICA['sess'] = sess
+                file4ICA['aff'] = get_aff(bids_loader, im_entities)
+                file4ICA['im'] = join(DIR_PIPELINES['bold-prep'], filepath_bold)
+
             if not args.indep_melodic or (args.indep_melodic and
                                           exists(join(DIR_PIPELINES['bold-prep'], dirname(filepath_bold), 'melodic'))):
                 print('already processed. Skipping.')
@@ -224,7 +230,7 @@ def process_subject(subject, bold_params, tmp_proc_dir, tmp_field_dir):
                     file4ICA['im'] = join(DIR_PIPELINES['bold-prep'], filepath_bold)
 
                 if args.indep_melodic:
-                    print('running independen MELODIC; ', end='', flush=True)
+                    print('running independent MELODIC; ', end='', flush=True)
                     fslDir = os.path.join(os.environ["FSLDIR"], 'bin', '')
                     runICA(fslDir, inFile=filepath_nuisance_proc_tmp,
                            outDir=join(DIR_PIPELINES['bold-prep'], dirname(filepath_bold)), melDirIn='',
@@ -326,7 +332,7 @@ if __name__ == '__main__':
         print('Running PET pre-processing over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
         print(
-            'Running PET pre-processing over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+            'Running PET pre-processing over the dataset in ' + bids_dir + ', only on files where output is missing.')
         if init_subject_list is not None:
             print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')

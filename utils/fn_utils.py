@@ -10,12 +10,12 @@ from munkres import Munkres
 
 def compute_center_RAS(proxy):
 
-    ras_cog = proxy.affine @ np.array([-proxy.shape[0] // 2, -proxy.shape[1] // 2, -proxy.shape[2] // 2, 1])
+    ras_cog = proxy.affine @ np.array([proxy.shape[0] // 2, proxy.shape[1] // 2, proxy.shape[2] // 2, 1])
 
     T = np.eye(4)
-    T[0, 3] = ras_cog[0]
-    T[1, 3] = ras_cog[1]
-    T[2, 3] = ras_cog[2]
+    T[0, 3] = -ras_cog[0]
+    T[1, 3] = -ras_cog[1]
+    T[2, 3] = -ras_cog[2]
     v2r = T @ proxy.affine
 
     data = np.array(proxy.dataobj)

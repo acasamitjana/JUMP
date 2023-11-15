@@ -34,8 +34,6 @@ def sbj2seg(subject_list):
             bids_dirname = image_file.dirname
 
             if image_file.entities['datatype'] == 'func':
-                anat_res_full = basename(
-                    bids_loader.build_path({**entities, **{'acquisition': '1'}}, path_patterns=BIDS_PATH_PATTERN))
                 proxy = nib.load(image_file.path)
 
                 entities['reconstruction'] = proxy.shape[-1] // 2
@@ -64,7 +62,6 @@ def sbj2seg(subject_list):
                 anat_input = image_file.filename
 
             if not exists(join(bids_dirname, anat_input)): continue
-            # if np.prod(nib.load(join(bids_dirname, anat_input)).shape) >= 192*256*256: continue
 
             anat_res = basename(bids_loader.build_path({**entities, **{'acquisition': '1'}},
                                                        path_patterns=BIDS_PATH_PATTERN, validate=False))
@@ -103,7 +100,7 @@ if __name__ == '__main__':
     if force_flag is True:
         print('Running SynthSeg over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
-        print('Running SynthSeg over the dataset in ' + bids_dir + ', only on files where segmentation is missing.')
+        print('Running SynthSeg over the dataset in ' + bids_dir + ', only on files where output is missing.')
         if init_subject_list is not None:
             print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')
