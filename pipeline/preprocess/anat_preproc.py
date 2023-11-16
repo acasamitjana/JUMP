@@ -16,7 +16,6 @@ from utils.fn_utils import one_hot_encoding, rescale_voxel_size
 from utils.labels import SYNTHSEG_LUT, CSF_LABELS
 from utils.io_utils import write_json_derivatives
 from utils.bf_utils import convert_posteriors_to_unified, bias_field_corr
-
 from setup import *
 
 def process_subject(subject, bids_loader, args, force_flag=False):
@@ -40,18 +39,7 @@ def process_subject(subject, bids_loader, args, force_flag=False):
             # Modality
             modality = seg_file.entities['suffix'].split('dseg')[0]
             print('  o Modality: ' + modality + ': ', end='', flush=True)  # , end=' ', flush=True)
-            # if 'run' in seg_file.entities.keys():
-            #     extra_kwargs = {'run': seg_file.entities['run']}
-            # else:
-            #     extra_kwargs = {}
-            # # check if already exists the image.
-            # orig_files = bids_loader.get(**{'session': tp_id, 'suffix': modality, **acq_orig_dict, **extra_kwargs})
-            # if len(orig_files) == 1:
-            #     print('image already processed.')
-            #     continue
-            # elif len(orig_files) > 1:
-            #     print('more than one image is found. Please, check the directory. Skipping.')
-            #     continue
+
 
             # build output paths
             ent_res = {k: str(v) for k, v in seg_file.entities.items() if k in filename_entities}
@@ -71,7 +59,7 @@ def process_subject(subject, bids_loader, args, force_flag=False):
             outrawjsonf = join(sess_seg_dir, json_raw_fename)
             outmaskf = seg_file.filename.replace('dseg', 'mask')
 
-            if exists(join(sess_seg_dir, im_raw_fname)):
+            if exists(join(sess_seg_dir, im_raw_fname)) and not force_flag:
                 print('image already processed.')
                 continue
 
@@ -262,8 +250,7 @@ if __name__ == '__main__':
     subject_list = bids_loader.get_subjects() if init_subject_list is None else init_subject_list
 
 
-
-    tmp_dir = '/tmp/ADNI-BIAS-FIELD/'
+    tmp_dir = '/tmp/JUMP-anat-prep/'
     if not exists(tmp_dir): makedirs(tmp_dir)
     failed_subjects = []
     if args.num_cores == 1:
@@ -281,5 +268,5 @@ if __name__ == '__main__':
 
     print('  Total failed subjects ' + str(len(failed_subjects)) + '. See ' + join(LOGS_DIR, 'anat_preproc.txt') + ' for more information.' )
     print('\n')
-    print('# --------- FI (JUMP-reg: graph initialization) --------- #')
+    print('# --------- FI (JUMP anatomical preprocessing) --------- #')
     print('\n')

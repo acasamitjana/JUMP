@@ -1,5 +1,5 @@
-python initialization/bold2mri.py
-python initialization/synthseg.py
+#python initialization/bold2mri.py
+python initialization/synthseg.py --threads 16
 python preprocess/anat_preproc.py
 
 python registration/initialize_graph.py

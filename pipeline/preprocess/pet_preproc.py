@@ -153,13 +153,13 @@ def process_subject(subject, tmp_proc_dir, tmp_res_dir):
         # affine matrix
         t1w_entities = t1w_seg_image.entities
         t1w_entities['suffix'] = 'T1w'
-        aff_bold = jump_utils.get_aff(bids_loader, im_entities)
+        aff_pet = jump_utils.get_aff(bids_loader, im_entities)
         aff_t1 = jump_utils.get_aff(bids_loader, t1w_entities)
-        new_aff = aff_bold @ np.linalg.inv(aff_t1)
-        if new_aff is None:
+        if aff_pet is None or aff_t1 is None:
             missing_files.append(pet_image.path)
             print('[error] processing of subject ' + subject + ' no valid JUMP-REG matrices. Skipping')
             continue
+        new_aff = aff_pet @ np.linalg.inv(aff_t1)
         new_v2r = new_aff @ t1w_seg_proxy.affine
 
         ## resample T1w to PET
@@ -311,5 +311,5 @@ if __name__ == '__main__':
 
     print('  Total failed subjects ' + str(len(missing_files)) + '. See ' + join(LOGS_DIR, 'pet_preproc.txt') + ' for more information.')
     print('\n')
-    print('# --------- FI (PET Preprocessing) --------- #')
+    print('# --------- FI (JUMP PET preprocessing) --------- #')
     print('\n')

@@ -185,7 +185,7 @@ def runICA(fslDir, inFile, outDir, melDirIn, mask, dim, TR, sep_vn=False):
                         '-mas ' + mask,
                         melICthr]))
 
-def register2MNI(fslDir, inFile, outFile, affmat, warp):
+def register2MNI(refFile, inFile, outFile, affmat, warp):
     """ This function registers an image (or time-series of images) to MNI152 T1 2mm. If no affmat is defined, it only warps (i.e. it assumes that the data has been registerd to the structural scan associated with the warp-file already). If no warp is defined either, it only resamples the data to 2mm isotropic if needed (i.e. it assumes that the data has been registered to a MNI152 template). In case only an affmat file is defined, it assumes that the data has to be linearly registered to MNI152 (i.e. the user has a reason not to use non-linear registration on the data).
 
     Parameters
@@ -205,13 +205,13 @@ def register2MNI(fslDir, inFile, outFile, affmat, warp):
     import os
 
     # Define the MNI152 T1 2mm template
-    fslnobin = fslDir.rsplit('/', 2)[0]
-    ref = os.path.join(fslnobin, 'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz')
+    # fslnobin = fslDir.rsplit('/', 2)[0]
+    # ref = os.path.join(fslnobin, 'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz')
 
     # If the no affmat- or warp-file has been specified, assume that the data is already in MNI152 space. In that case only check if resampling to 2mm is needed
     if (len(affmat) == 0) and (len(warp) == 0):
         # ref and inFile already living on the same space. Just check for resampling
-        proxyref = nib.load(ref)
+        proxyref = nib.load(refFile)
         proxyflo = nib.load(inFile)
         pixdim_ref = np.sqrt(np.sum(proxyref.affine * proxyref.affine, axis=0))[:-1]
         pixdim_flo = np.sqrt(np.sum(proxyflo.affine * proxyflo.affine, axis=0))[:-1]
@@ -236,7 +236,7 @@ def register2MNI(fslDir, inFile, outFile, affmat, warp):
 
     # If only a warp-file has been specified, assume that the data has already been registered to the structural scan. In that case apply the warping without a affmat
     elif (len(affmat) == 0) and (len(warp) != 0):
-        proxyref = nib.load(ref)
+        proxyref = nib.load(refFile)
         proxyflo = nib.load(inFile)
         proxyfield = nib.load(warp)
         f2r_field = torch.tensor(np.array(proxyfield.dataobj))
@@ -269,7 +269,7 @@ def register2MNI(fslDir, inFile, outFile, affmat, warp):
 
     # If only a affmat-file has been specified perform affine registration to MNI
     elif (len(affmat) != 0) and (len(warp) == 0):
-        proxyref = nib.load(ref)
+        proxyref = nib.load(refFile)
         proxyflo = nib.load(inFile)
         M = np.load(affmat)
 
@@ -292,7 +292,7 @@ def register2MNI(fslDir, inFile, outFile, affmat, warp):
 
     # If both a affmat- and warp-file have been defined, apply the warping accordingly
     else:
-        proxyref = nib.load(ref)
+        proxyref = nib.load(refFile)
         proxyflo = nib.load(inFile)
         proxyfield = nib.load(warp)
         M = np.load(affmat)

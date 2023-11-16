@@ -1,3 +1,4 @@
+import pdb
 from os.path import exists, dirname, join, basename
 from os import makedirs
 from argparse import ArgumentParser
@@ -67,7 +68,7 @@ def sbj2seg(subject_list):
                                                        path_patterns=BIDS_PATH_PATTERN, validate=False))
             anat_seg = anat_res.replace(entities['suffix'], entities['suffix'] + 'dseg')
             anat_vols = anat_seg.replace('nii.gz', 'tsv')
-            if exists(join(bids_dirname, anat_input)) and (not exists(join(synthseg_dirname, anat_seg)) or force_flag):
+            if not exists(join(synthseg_dirname, anat_seg)) or force_flag:
                 proxy = nib.load(join(bids_dirname, anat_input))
                 if len(proxy.shape) != 3: continue
                 if any(np.sum(np.abs(proxy.affine * proxy.affine), axis=0) <= 0.01): continue
@@ -81,15 +82,17 @@ def sbj2seg(subject_list):
 
 if __name__ == '__main__':
     print('\n\n\n\n\n')
-    print('# --------------------- #')
-    print('# Bold to MRI pipeline  #')
-    print('# --------------------- #')
+    print('# ----------------- #')
+    print('# SynthSeg pipeline #')
+    print('# ----------------- #')
     print('\n\n')
 
     parser = ArgumentParser(description="PET-MRI synthesis", epilog='\n')
     parser.add_argument("--bids", default=BIDS_DIR, help="Bids root directory, including rawdata")
     parser.add_argument('--subjects', default=None, nargs='+', help="(optional) specify which subjects to process")
-    parser.add_argument("--force", action='store_true', help="Force the script to overwriting existing segmentations in the derivatives/synthseg directory.")
+    parser.add_argument('--threads', default=8, type=int, help="(optional) specify the number of threads for synthseg.")
+    parser.add_argument("--force", action='store_true', help="(optional) force the script to overwriting existing "
+                                                             "segmentations in the derivatives/synthseg directory.")
 
     args = parser.parse_args()
     bids_dir = args.bids
@@ -146,7 +149,7 @@ if __name__ == '__main__':
     if len(output_files) >= 1:
         subprocess.call(
             ['mri_synthseg', '--i', '/tmp/inputfiles_jump.txt', '--o', '/tmp/outputfiles_jump.txt',
-             '--resample', '/tmp/resfiles_jump.txt', '--vol', '/tmp/volfiles_jump.txt', '--threads', '8',
+             '--resample', '/tmp/resfiles_jump.txt', '--vol', '/tmp/volfiles_jump.txt', '--threads', str(args.threads),
              '--robust', '--parc'], stderr=subprocess.PIPE)
 
     input_files, res_files, output_files, vol_files = [], [], [], []

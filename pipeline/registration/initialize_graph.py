@@ -130,7 +130,6 @@ if __name__ == '__main__':
     # Run registration #
     ####################
     failed_subjects = []
-    run_subject = 0
     for it_subject, subject in enumerate(subject_list):
         print('Subject: ' + subject)
         t_init = time.time()

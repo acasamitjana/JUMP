@@ -5,6 +5,7 @@ from os.path import join, exists, dirname, basename
 from argparse import ArgumentParser
 import warnings
 import subprocess
+
 import bids
 from nipype.interfaces import fsl
 from nipype.interfaces.fsl import ICA_AROMA as FSL_ICA_AROMA
@@ -162,11 +163,11 @@ def process_subject(subject, bold_params, tmp_proc_dir, tmp_field_dir):
         t1w_entities['suffix'] = 'T1w'
         aff_bold = get_aff(bids_loader, im_entities)
         aff_t1 = get_aff(bids_loader, t1w_entities)
-        new_aff = aff_bold @ np.linalg.inv(aff_t1)
-        if new_aff is None:
+        if aff_bold is None or aff_t1 is None:
             mf.append(bold_image.path)
             print('[error] processing of subject ' + subject + ' no valid JUMP-reg matrices. Skipping')
             continue
+        new_aff = aff_bold @ np.linalg.inv(aff_t1)
         np.save(filepath_aff_tmp, new_aff)
 
         # MOTION CORRECTION: need to write '*.mat' file and not only the temporal image
@@ -446,5 +447,5 @@ if __name__ == '__main__':
     print('  Total group ICA sessions: ' + str(len(gica_files)), end='. ', flush=True)
     print('  Total failed subjects ' + str(len(missing_files)) + '. See ' + join(LOGS_DIR, 'bold_preproc.txt') + ' for more information.')
     print('\n')
-    print('# --------- FI (BOLD preprocessing) --------- #')
+    print('# --------- FI (JUMP bold preprocessing) --------- #')
     print('\n')
