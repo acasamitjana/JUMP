@@ -2,7 +2,8 @@
 # Date creation: 13/11/2021
 # Historial of modification:
 #    - Initial commit: Adria -  13/11/2021
-import pdb
+from setup import *
+
 from os.path import join, exists, dirname
 from os import makedirs
 import time
@@ -19,7 +20,6 @@ import itertools
 from utils.jump_utils import initialize_graph_linear
 from utils.fn_utils import compute_centroids_ras, compute_center_RAS
 from utils.synthmorph_utils import labels_registration
-from setup import *
 
 
 def register(subject, force_flag=False):
@@ -32,23 +32,24 @@ def register(subject, force_flag=False):
     for tp_id in timepoints:
         print('* Registering T=' + str(tp_id), end=': ', flush=True)
         sess_str = 'ses-' + tp_id
+        seg_files = bids_loader.get(**{'suffix': suffix_seg_list, 'session': tp_id, **seg_dict})
+        if len(bids_loader.get(subject=subject, session=tp_id, extension='npy', desc='aff', scope='jump-reg')) == len(seg_files):
+            print('[done] Latent transforms already available.')
+            continue
 
         deformations_dir = join(DIR_PIPELINES['jump-reg'], sub_str , sess_str, 'deformations')
         if force_flag: subprocess.call(['rm', '-rf', deformations_dir])
         if not exists(deformations_dir): makedirs(deformations_dir)
 
-        seg_files = bids_loader.get(**{'suffix': suffix_seg_list, 'session': tp_id, **seg_dict})
 
         if len(seg_files) <= 1:
-            print('  It has only ' + str(len(seg_files)) + ' modalities. No registration is made.')
+            print('[done] It has only ' + str(len(seg_files)) + ' modalities. No registration is made.')
             continue
 
         print('centering images in RAS;', end=' ', flush=True)
         modality_proxies = {}
         for seg_file in seg_files:
             modality = seg_file.entities['suffix'].split('dseg')[0]
-            if 'run' in seg_file.entities.keys():
-                modality += '.' + str(seg_file.entities['run'])
 
             outproxy, Tc = compute_center_RAS(nib.load(seg_file.path))
 
@@ -60,11 +61,12 @@ def register(subject, force_flag=False):
                                                      absolute_paths=False, path_patterns=BIDS_PATH_PATTERN)
             np.save(join(DIR_PIPELINES['seg'], im_cog_filename.replace('nii.gz', 'npy')), Tc)
 
+            if 'run' in seg_file.entities.keys():
+                modality += '.' + str(seg_file.entities['run'])
             modality_proxies[modality] = outproxy
 
-        if all([exists(join(deformations_dir, str(mod_ref) + '_to_' + str(mod_flo) + '.aff')) for mod_ref, mod_flo in
-                itertools.combinations(modality_proxies.keys(), 2)]):
-            print('[done] ]t has been already processed.')
+        if all([exists(join(deformations_dir, str(mod_ref) + '_to_' + str(mod_flo) + '.npy')) for mod_ref, mod_flo in itertools.combinations(modality_proxies.keys(), 2)]):
+            print('[done] Registrations have been already been computed.')
             continue
 
         print('computing centroids.')
@@ -79,7 +81,8 @@ def register(subject, force_flag=False):
 
             filename = str(modality_ref) + '_to_' + str(modality_flo)
 
-            if exists(join(deformations_dir, filename + '.npy')): continue
+            if exists(join(deformations_dir, filename + '.npy')):
+                continue
 
             print('   > registering ' + str(modality_ref) + ' and ' + modality_flo + ';', end=' ', flush=True)
             initialize_graph_linear([centroid_dict[modality_ref], centroid_dict[modality_flo]],
@@ -134,11 +137,14 @@ if __name__ == '__main__':
         print('Subject: ' + subject)
         t_init = time.time()
         try:
-            register(subject, force_flag=force_flag)
+            ms = register(subject, force_flag=force_flag)
         except:
+            ms = subject
+
+        if ms is not None:
             failed_subjects.append(subject)
 
-        print('Total registration time: ' + str(np.round(time.time() - t_init, 2)) + '\n')
+        print('\nTotal registration time: ' + str(np.round(time.time() - t_init, 2)) + '\n')
 
 
     f = open(join(LOGS_DIR, 'initialize_graph.txt'), 'w')

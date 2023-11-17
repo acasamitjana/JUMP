@@ -1,3 +1,5 @@
+from setup import *
+
 from os.path import exists, dirname, join, basename
 from argparse import ArgumentParser
 import subprocess
@@ -6,7 +8,6 @@ import bids
 import numpy as np
 from joblib import delayed, Parallel
 
-from setup import *
 from utils.io_utils import write_json_derivatives
 
 

@@ -43,23 +43,22 @@ def solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=Fals
 
     seg_dict = {'subject': subject, 'scope': 'synthseg', 'extension': 'nii.gz'}
     suffix_seg_list = [s for s in bids_loader.get(**{**seg_dict, 'return_type': 'id', 'target': 'suffix'}) if 'dseg' in s]
+    ms = []
     for tp_id in timepoints:
-        print('* Computing T=' + str(tp_id))
+        print('* Computing T=' + str(tp_id), end='; ', flush=True)
 
         dir_results_sess = join(dir_results_sbj, 'ses-' + tp_id)
         deformations_dir = join(dir_results_sess, 'deformations')
-        linear_template = join(dir_results_sess, 'anat', filename_template + '.nii.gz')
         seg_files = bids_loader.get(**{'suffix': suffix_seg_list, 'session': tp_id, **seg_dict})
         if len(seg_files) == 1:
-            print('  It has only 1 modality. No registration is made.')
+            print('[done] It has only 1 modality. No registration is made.')
+            ms.append(subject + '_' + tp_id)
             continue
 
         modality_list = []
         cog_list = []
         for seg_file in seg_files:
             modality = seg_file.entities['suffix'].split('dseg')[0]
-            if 'run' in seg_file.entities.keys():
-                modality += '.' + str(seg_file.entities['run'])
 
             cog_entities = {k: v for k, v in seg_file.entities.items() if k in filename_entities}
             cog_entities['extension'] = 'npy'
@@ -69,23 +68,29 @@ def solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=Fals
                 cog_entities.pop('acquisition')
             cog_file = bids_loader.get(**cog_entities)
             if len(cog_file) != 1:
-                print('  No COG file found. No registration is made.')
+                print('[error] no COG file found. No registration is made.')
                 modality_list = []
                 break
 
-            modality_list.append(modality)
             cog_list.append(cog_file[0].path)
 
+            if 'run' in seg_file.entities.keys():
+                modality += '.' + str(seg_file.entities['run'])
+            modality_list.append(modality)
+
         if len(modality_list) == 0:
-            print('  Skipping. No modalities found.')
+            print('[error]. No modalities found.')
+            ms.append(subject + '_' + tp_id)
             continue
 
+
         elif len(modality_list) == 1 and seg_files[0].entities['dataype'] == 'anat':
-            print('   It has only 1 modality. No registration is made.')
-            return
+            print('[done] It has only 1 modality. No registration is made.')
+            continue
 
         elif not exists(join(deformations_dir, modality_list[-2] + '_to_' + modality_list[-1] + '.npy')):
-            print('   !!! WARNING -- No observations found for subject ' + subject + '.')
+            print('[error] No observations found for subject ' + subject + '. Skipping')
+            ms.append(subject + '_' + tp_id)
             continue
 
         # Check if multiple runs in this dataset.
@@ -144,9 +149,11 @@ def solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=Fals
 
             if verbose: print('   - [Integration] Total Elapsed time: ' + str(time.time() - t_init) + '\n')
 
-            # -------------------------------------------------------------------#
-            # -------------------------------------------------------------------#
+    return ms
 
+
+# -------------------------------------------------------------------#
+# -------------------------------------------------------------------#
 
 def init_ST(timepoints, input_dir, eps=1e-6, extension='aff'):
     nk = 0

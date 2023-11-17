@@ -1,6 +1,9 @@
 import os
-import pdb
 import json
+import pdb
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 
 filename_entities = ['subject', 'session', 'run', 'acquisition', 'suffix', 'extension', 'task', 'tracer', 'reconstruction']
 anat_modalities = ['T1w', 'T2w', 'T2star', 'T2starw', 'FLAIR', 'FLASH', 'PD', 'PDw', 'PDT2']

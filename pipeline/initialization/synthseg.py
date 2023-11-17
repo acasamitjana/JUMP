@@ -1,4 +1,5 @@
-import pdb
+from setup import *
+
 from os.path import exists, dirname, join, basename
 from os import makedirs
 from argparse import ArgumentParser
@@ -9,7 +10,6 @@ import numpy as np
 import bids
 
 
-from setup import *
 from utils.labels import SYNTHSEG_APARC_LUT
 from utils.io_utils import write_json_derivatives
 
@@ -24,6 +24,7 @@ def sbj2seg(subject_list):
     for subject in subject_list:
         image_file_list = bids_loader.get(subject=subject, extension='nii.gz')
         image_file_list = list(filter(lambda x: 'rec' not in x.filename, image_file_list))
+        image_file_list = list(filter(lambda x: 'acq-1' not in x.filename, image_file_list))
         for image_file in image_file_list:
             if image_file.entities['suffix'] not in VALID_MODALITIES: continue
 

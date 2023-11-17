@@ -1,4 +1,7 @@
 import pdb
+
+from setup import *
+
 import time
 from os.path import exists, join, dirname
 from argparse import ArgumentParser
@@ -8,9 +11,9 @@ import torch
 from tensorflow import keras
 import bids
 
+
 # project imports
 from utils import synthmorph_utils, def_utils
-from setup import *
 from utils.jump_utils import initialize_graph_linear, get_aff
 from utils.fn_utils import compute_centroids_ras
 from utils.synthmorph_utils import VxmDenseOriginalSynthmorph, instance_register, path_model_registration, \
@@ -31,10 +34,11 @@ def register_subject(subject, args):
                        'scope': 'synthseg'}
         im_file = bids_loader.get(**im_entities)
         if len(im_file) > 1:
-            im_file = bids_loader.get(**{**im_entities, 'run': '01'})
+            im_entities['run'] = '01'
+            im_file = bids_loader.get(**im_entities)
 
         if len(im_file) != 1:
-            print('\n    !! [error] no T1w image found for subject: ' + subject + ' and timpeoint: ' + tp +
+            print('[error] no T1w image found for subject: ' + subject + ' and timpeoint: ' + tp +
                   '. Either inexistent or refine your search query.')
             missed_sess.append(fname_prefix)
             continue
@@ -44,7 +48,8 @@ def register_subject(subject, args):
         ent_seg_res['suffix'] = 'T1wdseg'
         seg_file = bids_loader.get(**ent_seg_res)
         if len(seg_file) != 1:
-            print('\n    !![error] Refine the search for subject: ' + subject + ' and timepoint: ' + tp)
+            print('[error] no T1w segmentation found for subject: ' + subject + ' and timpeoint: ' + tp +
+                  '. Either inexistent or refine your search query.')
             missed_sess.append(fname_prefix)
             continue
         seg_file = seg_file[0]
@@ -110,7 +115,7 @@ def register_subject(subject, args):
                                                                             proxyatlas, M_ref)
 
             else:
-                print('\n    !! [error] ' + template_str + ' ATLAS STILL NOT IMPLEMENTED. SKIPPING.')
+                print('[error] ' + template_str + ' atlast still not implemented. Skipping')
                 exit()
 
             print('(2) computing nonlinear field', end='; ', flush=True)
@@ -175,7 +180,7 @@ def register_subject(subject, args):
             nib.save(img, filepath_reg)
 
             # Saving backward field
-            print('(5) saving backward field.')
+            print('(5) saving backward field;', end=' ', flush=True)
             II, JJ, KK = np.meshgrid(np.arange(flo_proxy.shape[0]), np.arange(flo_proxy.shape[1]),
                                      np.arange(flo_proxy.shape[2]), indexing='ij')
             II = torch.tensor(II, device='cpu')
@@ -198,7 +203,10 @@ def register_subject(subject, args):
             RAS_Z = affine[2, 0] * II3 + affine[2, 1] * JJ3 + affine[2, 2] * KK3 + affine[2, 3]
             img = nib.Nifti1Image(torch.stack([RAS_X, RAS_Y, RAS_Z], axis=-1).numpy().astype('float32'), R_aff)
             nib.save(img, filepath_def_backward)
+            print('done.')
 
+        else:
+            print('[done] session already processed.')
     return missed_sess
 
 
@@ -228,15 +236,31 @@ if __name__ == '__main__':
     tmp_dir = '/tmp/smr_to_template/'
     if not exists(tmp_dir): os.makedirs(tmp_dir)
 
-    print('\n\n########################')
+    title = 'Running JUMP registration over the dataset in'
+    length_title = max(len(bids_dir), len(title))
+    print('\n\n' + '#' * length_title)
     if force_flag is True:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
+        print(title + '\n' + bids_dir + '\nOVERWRITING existing files.')
     else:
-        print(
-            'Running JUMP registration over the dataset in ' + bids_dir + ', only on files where output is missing.')
+        print(title + '\n' + bids_dir + '\nonly on files where output is missing.')
+
     if init_subject_list is not None:
-        print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
-    print('########################')
+        print(' * Selected subjects: ')  # ', '.join(init_subject_list) + '.')
+        print('   ')
+        total_l = 3
+        for init_s in init_subject_list:
+            if total_l + len(init_s) > length_title and init_s != init_subject_list[-1]:
+                print(', \n')
+                print('   ')
+                total_l = 3
+
+            if total_l == 3:
+                print(init_s)
+            else:
+                print(', ' + init_s)
+
+            total_l += len(init_s)
+    print('#' * length_title)
 
     print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')

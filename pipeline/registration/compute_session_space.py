@@ -1,11 +1,10 @@
-import pdb
+from setup import *
+
 from argparse import ArgumentParser
 from joblib import delayed, Parallel
 
 import bids
 import nibabel as nib
-from scipy.ndimage import binary_dilation
-from skimage.morphology import ball
 
 # project imports
 from src.jump_reg import *
@@ -40,8 +39,9 @@ def compute_subject_template(subject, verbose=True):
             linear_seg_list = {}
             for seg_file in seg_files:
                 modality = seg_file.entities['suffix'].split('dseg')[0]
-                modality_run = modality
                 mod_kwargs = {'suffix': modality}
+
+                modality_run = modality
                 if 'run' in seg_file.entities.keys():
                     mod_kwargs['run'] = seg_file.entities['run']
                     modality_run += '.' + str(seg_file.entities['run'])

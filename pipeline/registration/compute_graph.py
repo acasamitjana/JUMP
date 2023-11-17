@@ -2,6 +2,7 @@
 # Date creation: 13/11/2021
 # Historial of modification:
 #    - Initial commit: Adria -  13/11/2021
+from setup import *
 
 from argparse import ArgumentParser
 import bids
@@ -68,9 +69,15 @@ if __name__ == '__main__':
         for it_subject, subject in enumerate(subject_list):
             t_init = time.time()
             try:
-                solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=force_flag)
+                ms = solve_ST(bids_loader, subject, cost, lr, max_iter, n_epochs, force_flag=force_flag)
             except:
-                failed_subjects.append(subject)
+                ms = [subject]
+
+            if isinstance(ms, list):
+                failed_subjects.extend(ms)
+            elif ms is not None:
+                failed_subjects.append(ms)
+
             print('Total computation time: ' + str(np.round(time.time() - t_init, 2)) + '\n')
 
     f = open(join(LOGS_DIR, 'compute_graph.txt'), 'w')

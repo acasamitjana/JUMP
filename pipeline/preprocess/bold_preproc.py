@@ -1,5 +1,5 @@
-import os
-import pdb
+from setup import *
+
 from os import listdir, makedirs
 from os.path import join, exists, dirname, basename
 from argparse import ArgumentParser
@@ -11,7 +11,6 @@ from nipype.interfaces import fsl
 from nipype.interfaces.fsl import ICA_AROMA as FSL_ICA_AROMA
 from nilearn.image import clean_img
 
-from setup import *
 from src.preprocessing import *
 from utils.jump_utils import get_aff
 
@@ -330,10 +329,10 @@ if __name__ == '__main__':
 
     print('\n\n########################')
     if force_flag is True:
-        print('Running PET pre-processing over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
+        print('Running BOLD pre-processing over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
     else:
         print(
-            'Running PET pre-processing over the dataset in ' + bids_dir + ', only on files where output is missing.')
+            'Running BOLD pre-processing over the dataset in ' + bids_dir + ', only on files where output is missing.')
         if init_subject_list is not None:
             print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
     print('########################')

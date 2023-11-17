@@ -1,9 +1,11 @@
-import pdb
+from setup import *
+
+import subprocess
 from argparse import ArgumentParser
 from joblib import delayed, Parallel
+
 import bids
 
-# project imports
 from src.jump_reg import *
 
 

@@ -1,8 +1,7 @@
-import os
-import pdb
+from setup import *
+
 from os import listdir, makedirs
 from os.path import join, exists, dirname
-import json
 from argparse import ArgumentParser
 import copy
 
@@ -14,7 +13,6 @@ import pandas as pd
 import scipy.ndimage as ndi
 from nipype.interfaces import fsl
 
-from setup import *
 from utils import fn_utils, jump_utils
 from src.preprocessing import *
 
