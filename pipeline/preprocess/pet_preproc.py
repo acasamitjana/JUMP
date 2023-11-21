@@ -13,7 +13,7 @@ import pandas as pd
 import scipy.ndimage as ndi
 from nipype.interfaces import fsl
 
-from utils import fn_utils, jump_utils
+from utils import fn_utils, jump_utils, io_utils
 from src.preprocessing import *
 
 
@@ -270,15 +270,8 @@ if __name__ == '__main__':
     tmp_proc_dir = '/tmp/PET_proc'
     tmp_res_dir = '/tmp/PET_resample'
 
-    print('\n\n########')
-    if force_flag is True:
-        print('Running PET pre-processing over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
-    else:
-        print(
-            'Running PET pre-processing over the dataset in ' + bids_dir + ', only on files where output is missing.')
-        if init_subject_list is not None:
-            print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
-    print('########################')
+    title = 'Running PET pre-processing over the dataset in '
+    io_utils.print_title_script(title, args)
 
     print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')

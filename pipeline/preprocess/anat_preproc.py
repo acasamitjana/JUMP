@@ -16,7 +16,7 @@ import bids
 
 from utils.fn_utils import one_hot_encoding, rescale_voxel_size
 from utils.labels import SYNTHSEG_LUT, CSF_LABELS
-from utils.io_utils import write_json_derivatives
+from utils.io_utils import write_json_derivatives, print_title_script
 from utils.bf_utils import convert_posteriors_to_unified, bias_field_corr
 
 def process_subject(subject, bids_loader, args, force_flag=False):
@@ -224,31 +224,7 @@ if __name__ == '__main__':
     keep_wrong = args.keep_wrong
 
     title = 'Running anatomical pre-processing over the dataset in '
-    length_title = max(len(bids_dir), len(title))
-    print('\n\n' + '#'*length_title)
-    if force_flag is True:
-        print(title + '\n' + bids_dir + '\nOVERWRITING existing files.')
-    else:
-        print(title + '\n' + bids_dir + '\nonly on files where output is missing.')
-
-    if init_subject_list is not None:
-        print(' * Selected subjects: ')  # ', '.join(init_subject_list) + '.')
-        print('   ')
-        total_l = 3
-        for init_s in init_subject_list:
-            if total_l + len(init_s) > length_title and init_s != init_subject_list[-1]:
-                print(', \n')
-                print('   ')
-                total_l = 3
-
-            if total_l == 3:
-                print(init_s)
-            else:
-                print(', ' + init_s)
-
-            total_l += len(init_s)
-    print('#'*length_title)
-
+    print_title_script(title, args)
 
     print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')

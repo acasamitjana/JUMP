@@ -1,3 +1,5 @@
+import pdb
+
 from setup import *
 
 from os import listdir, makedirs
@@ -13,6 +15,7 @@ from nilearn.image import clean_img
 
 from src.preprocessing import *
 from utils.jump_utils import get_aff
+from utils.io_utils import print_title_script
 
 warnings.filterwarnings("ignore")
 
@@ -311,10 +314,6 @@ if __name__ == '__main__':
     group_melodic_flag = args.group_melodic
     global_confound_flag, csf_vwm_confound_flag = args.no_glob_conf, args.no_csf_wm_conf
     accept_no_mri = args.accept_no_mri
-    if "FSLDIR" not in os.environ.keys():
-        print('FSL dependency is required. Please install and/or source FSL')
-        exit()
-    fslDir = os.path.join(os.environ["FSLDIR"], 'bin', '')
 
     # nuisance regression parameters
     bold_params = {'tr': 2, 'hp': 0.01, 'lp': 0.1}
@@ -327,15 +326,8 @@ if __name__ == '__main__':
     if not exists(tmp_field_dir): os.makedirs(tmp_field_dir)
     if not exists(tmp_gICA_dir): os.makedirs(tmp_gICA_dir)
 
-    print('\n\n########################')
-    if force_flag is True:
-        print('Running BOLD pre-processing over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
-    else:
-        print(
-            'Running BOLD pre-processing over the dataset in ' + bids_dir + ', only on files where output is missing.')
-        if init_subject_list is not None:
-            print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
-    print('########################')
+    title = 'Running BOLD pre-processing over the dataset in'
+    print_title_script(title, args)
 
     print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')
@@ -354,83 +346,94 @@ if __name__ == '__main__':
 
     missing_files = []
     process_flag = False
-    for it_s, subject in enumerate(subject_list):
-        print('Subject: ' + subject)
-
-        mf, file4ICA = process_subject(subject, bold_params, tmp_proc_dir, tmp_field_dir)
-        missing_files.extend(mf)
-
-        if group_melodic_flag and file4ICA['im'] is not None:
-            print(' * Register BOLD to MNI for group ICA: ', end='', flush=True)
-            if not exists(join(tmp_gICA_dir, subject)): makedirs(join(tmp_gICA_dir, subject))
-
-            def_MNI_proxy, file_entities = resample_to_MNI2mm(DIR_PIPELINES['session-mni'], subject, file4ICA['sess'])
-            if def_MNI_proxy is None:
-                print('not a valid T1w-MNI deformation field. Skipping.')
-                continue
-
-
-            np.save(join(tmp_gICA_dir, subject, 'aff.npy'), file4ICA['aff'])
-            nib.save(def_MNI_proxy, join(tmp_gICA_dir, subject, 'warp.nii.gz'))
-
-
-            register2MNI(fslDir,
-                         file4ICA['im'],
-                         join(tmp_gICA_dir, subject, 'output.nii.gz'),
-                         join(tmp_gICA_dir, subject, 'aff.npy'),
-                         join(tmp_gICA_dir, subject, 'warp.nii.gz'))
-
-            subprocess.call(['rm', '-rf', join(tmp_gICA_dir, subject, 'aff.npy')])
-            subprocess.call(['rm', '-rf', join(tmp_gICA_dir, subject, 'warp.nii.gz')])
-
-
-        if exists(join(tmp_proc_dir, subject)):
-            subprocess.call(['rm', '-rf', join(tmp_proc_dir, subject)])
-        if exists(join(tmp_field_dir, subject)):
-            subprocess.call(['rm', '-rf', join(tmp_field_dir, subject)])
-
+    # for it_s, subject in enumerate(subject_list):
+    #     print('Subject: ' + subject)
+    #
+    #     try:
+    #         mf, file4ICA = process_subject(subject, bold_params, tmp_proc_dir, tmp_field_dir)
+    #         missing_files.extend(mf)
+    #     except:
+    #         mf = subject
+    #         missing_files.extend(mf)
+    #         continue
+    #
+    #
+    #     if group_melodic_flag and file4ICA['im'] is not None and not exists(join(tmp_gICA_dir, subject, 'output.nii.gz')):
+    #         print(' * Register BOLD to MNI for group ICA: ', end='', flush=True)
+    #         if not exists(join(tmp_gICA_dir, subject)):
+    #             makedirs(join(tmp_gICA_dir, subject))
+    #
+    #         def_MNI_proxy, file_entities = resample_to_MNI2mm(DIR_PIPELINES['session-mni'], 'sub-' + subject, 'ses-' + file4ICA['sess'])
+    #         if def_MNI_proxy is None:
+    #             print('not a valid T1w-MNI deformation field. Skipping.')
+    #             continue
+    #
+    #
+    #         np.save(join(tmp_gICA_dir, subject, 'aff.npy'), file4ICA['aff'])
+    #         nib.save(def_MNI_proxy, join(tmp_gICA_dir, subject, 'warp.nii.gz'))
+    #
+    #
+    #         register2MNI(MNI_TEMPLATE_2mm,
+    #                      file4ICA['im'],
+    #                      join(tmp_gICA_dir, subject, 'output.nii.gz'),
+    #                      join(tmp_gICA_dir, subject, 'aff.npy'),
+    #                      join(tmp_gICA_dir, subject, 'warp.nii.gz'))
+    #
+    #         subprocess.call(['rm', '-rf', join(tmp_gICA_dir, subject, 'aff.npy')])
+    #         subprocess.call(['rm', '-rf', join(tmp_gICA_dir, subject, 'warp.nii.gz')])
+    #
+    #     print('')
+    #     if exists(join(tmp_proc_dir, subject)):
+    #         subprocess.call(['rm', '-rf', join(tmp_proc_dir, subject)])
+    #     if exists(join(tmp_field_dir, subject)):
+    #         subprocess.call(['rm', '-rf', join(tmp_field_dir, subject)])
+    #
     print('\n\nRunning group-ICA over the sample.')
-    print('  * Reading MNI template: ' + join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz'))
+    print('  * Reading MNI template: ' + join(MNI_TEMPLATE_2mm))
 
     mask_filepath_tmp = join(tmp_gICA_dir, 'MNI_mask_2mm.nii.gz')
-    ref_mni_proxy = nib.load(join(os.environ['FSLDIR'], 'data', 'standard', 'MNI152_T1_2mm_brain.nii.gz'))
-    ref_mni_array = np.array(ref_mni_proxy.dataobj)
-    ref_mni_mask = ref_mni_array > 0
-    ref_mni_mask_proxy = nib.Nifti1Image(ref_mni_mask.astype('uint8'), ref_mni_proxy.affine)
-    nib.save(ref_mni_mask_proxy, mask_filepath_tmp)
-
-
-    gica_files = []
-    n_time = 10000000
-    print('  * Reading bold files.')
-    for sbj in listdir(tmp_gICA_dir):
-        if exists(join(tmp_gICA_dir, sbj, 'output.nii.gz')):
-            curr_time = nib.load(join(tmp_gICA_dir, sbj, 'output.nii.gz')).shape[-1]
-            if curr_time < n_time:
-                n_time = curr_time
-            gica_files.append(join(tmp_gICA_dir, sbj, 'output.nii.gz'))
-
-    print('  * Cropping ' + str(len(gica_files)) + ' files to same number of timepoints: ' + str(n_time), end='. ', flush=True)
-    final_gica_files = []
-    it_perc = 10
-    for it_bf, bf in enumerate(gica_files):
-        if np.abs(100 * it_bf / len(gica_files) - it_perc) <= 1e-6 + 1 / len(gica_files):
-            print(str(it_perc) + '%', end=' ', flush=True)
-            it_perc += 10
-
-        proxy = nib.load(bf)
-        data = np.array(proxy.dataobj)
-        img = nib.Nifti1Image(data[..., :n_time], proxy.affine)
-        nib.save(img, bf.replace('output', 'output' + str(n_time)))
-        final_gica_files.append(bf.replace('output', 'output' + str(n_time)))
-
-    print('')
-    f = open(join(tmp_gICA_dir, 'files_to_melodic.txt'), 'w')
-    f.writelines('\n'.join(final_gica_files))
-    f.close()
+    # if not exists(mask_filepath_tmp):
+    #     ref_mni_proxy = nib.load(MNI_TEMPLATE_2mm)
+    #     ref_mni_array = np.array(ref_mni_proxy.dataobj)
+    #     ref_mni_mask = ref_mni_array > 0
+    #     ref_mni_mask_proxy = nib.Nifti1Image(ref_mni_mask.astype('uint8'), ref_mni_proxy.affine)
+    #     nib.save(ref_mni_mask_proxy, mask_filepath_tmp)
+    #
+    # gica_files = []
+    # n_time = 10000000
+    # print('  * Reading bold files.')
+    # for sbj in listdir(tmp_gICA_dir):
+    #     if exists(join(tmp_gICA_dir, sbj, 'output.nii.gz')):
+    #         curr_time = nib.load(join(tmp_gICA_dir, sbj, 'output.nii.gz')).shape[-1]
+    #         if curr_time < n_time:
+    #             n_time = curr_time
+    #         gica_files.append(join(tmp_gICA_dir, sbj, 'output.nii.gz'))
+    #
+    # print('  * Cropping ' + str(len(gica_files)) + ' files to same number of timepoints: ' + str(n_time), end='. ', flush=True)
+    # final_gica_files = []
+    # it_perc = 10
+    # for it_bf, bf in enumerate(gica_files):
+    #     if np.abs(100 * it_bf / len(gica_files) - it_perc) <= 1e-6 + 1 / len(gica_files):
+    #         print(str(it_perc) + '%', end=' ', flush=True)
+    #         it_perc += 10
+    #
+    #     proxy = nib.load(bf)
+    #     data = np.array(proxy.dataobj)
+    #     img = nib.Nifti1Image(data[..., :n_time], proxy.affine)
+    #     nib.save(img, bf.replace('output', 'output' + str(n_time)))
+    #     final_gica_files.append(bf.replace('output', 'output' + str(n_time)))
+    #
+    #     subprocess.call(['rm', 'rf', bf])
+    # print('')
+    # f = open(join(tmp_gICA_dir, 'files_to_melodic.txt'), 'w')
+    # f.writelines('\n'.join(final_gica_files))
+    # f.close()
     print('  * Running ICA')
-    runICA(fslDir, inFile=join(tmp_gICA_dir, 'files_to_melodic.txt'), outDir=join(RESULTS_DIR, 'melodic.ica.group'),
-           melDirIn='', mask=mask_filepath_tmp, dim=15, TR=3, sep_vn=True)
+    pdb.set_trace()
+    f = open(join(tmp_gICA_dir, 'files_to_melodic.txt'), 'r')
+    final_gica_files = f.readlines()
+    runICA(join(os.environ["FSLDIR"], 'bin'), inFile=join(tmp_gICA_dir, 'files_to_melodic.txt'), sep_vn=True,
+           outDir=join(RESULTS_DIR, 'melodic.ica.group'), melDirIn='', mask=mask_filepath_tmp, dim=15, TR=3)
 
     if exists(tmp_proc_dir):
         subprocess.call(['rm', '-rf', tmp_proc_dir])
@@ -440,10 +443,10 @@ if __name__ == '__main__':
     f = open(join(LOGS_DIR, 'bold_preproc.txt'), 'w')
     f.write('Total unprocessed files: ' + str(len(missing_files)))
     f.write(','.join(['\'' + s + '\'' for s in missing_files]))
-    f.write('Total group ICA sessions: ' + str(len(gica_files)))
-    f.write(','.join(['\'' + s + '\'' for s in gica_files]))
+    f.write('Total group ICA sessions: ' + str(len(final_gica_files)))
+    f.write(','.join(['\'' + s + '\'' for s in final_gica_files]))
 
-    print('  Total group ICA sessions: ' + str(len(gica_files)), end='. ', flush=True)
+    print('  Total group ICA sessions: ' + str(len(final_gica_files)), end='. ', flush=True)
     print('  Total failed subjects ' + str(len(missing_files)) + '. See ' + join(LOGS_DIR, 'bold_preproc.txt') + ' for more information.')
     print('\n')
     print('# --------- FI (JUMP bold preprocessing) --------- #')

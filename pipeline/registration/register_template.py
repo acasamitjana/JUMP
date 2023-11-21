@@ -14,6 +14,7 @@ import bids
 
 # project imports
 from utils import synthmorph_utils, def_utils
+from utils.io_utils import print_title_script
 from utils.jump_utils import initialize_graph_linear, get_aff
 from utils.fn_utils import compute_centroids_ras
 from utils.synthmorph_utils import VxmDenseOriginalSynthmorph, instance_register, path_model_registration, \
@@ -63,12 +64,22 @@ def register_subject(subject, args):
         filepath_imlinear = join(tmp_dir, fname_prefix + tp + '_imlinear.nii.gz')
         filepath_seglinear = join(tmp_dir, fname_prefix + tp + '_seglinear.nii.gz')
 
+        pdb.set_trace()
         if not exists(filepath_def) or not exists(filepath_def_backward) or force_flag:
             if template_str == 'MNI':
                 print('(1) computing linear field; ', end=' ', flush=True)
 
                 # IMAGE TO MNI LINEAR
                 affine_matrix = get_aff(bids_loader, im_entities)
+                if affine_matrix is None:
+                    if len(bids_loader.get(
+                            scope='raw', subject=subject, session=tp, extension='nii.gz', acquisition=None)) == 1:
+                        affine_matrix = np.eye(4)
+                    else:
+                        print('[error] no affine matrix found for T1w images')
+                        missed_sess.append(fname_prefix)
+                        continue
+
                 proxy = nib.load(im_file.path)
                 data = np.array(proxy.dataobj)
                 img = nib.Nifti1Image(data, np.linalg.inv(affine_matrix) @ proxy.affine)
@@ -237,30 +248,7 @@ if __name__ == '__main__':
     if not exists(tmp_dir): os.makedirs(tmp_dir)
 
     title = 'Running JUMP registration over the dataset in'
-    length_title = max(len(bids_dir), len(title))
-    print('\n\n' + '#' * length_title)
-    if force_flag is True:
-        print(title + '\n' + bids_dir + '\nOVERWRITING existing files.')
-    else:
-        print(title + '\n' + bids_dir + '\nonly on files where output is missing.')
-
-    if init_subject_list is not None:
-        print(' * Selected subjects: ')  # ', '.join(init_subject_list) + '.')
-        print('   ')
-        total_l = 3
-        for init_s in init_subject_list:
-            if total_l + len(init_s) > length_title and init_s != init_subject_list[-1]:
-                print(', \n')
-                print('   ')
-                total_l = 3
-
-            if total_l == 3:
-                print(init_s)
-            else:
-                print(', ' + init_s)
-
-            total_l += len(init_s)
-    print('#' * length_title)
+    print_title_script(title, args)
 
     print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')
@@ -294,18 +282,21 @@ if __name__ == '__main__':
         print(' * Subject: ' + str(subject) + '  -  ' + str(it_subject) + '/' + str(len(subject_list)))
 
         t_init = time.time()
-        fs = register_subject(subject, args)
+        try:
+            fs = register_subject(subject, args)
+        except:
+            fs = [subject]
         failed_sessions.extend(fs)
 
         print('   Total Elapsed time: ' + str(np.round(time.time() - t_init, 2)) + ' seconds.')
 
-    f = open(join(LOGS_DIR, 'initialize_graph.txt'), 'w')
+    f = open(join(LOGS_DIR, 'register_template.txt'), 'w')
     f.write('Total unprocessed subjects: ' + str(len(failed_sessions)))
     f.write(','.join(['\'' + s + '\'' for s in failed_sessions]))
 
     print('\n')
     print('Total failed subjects ' + str(len(failed_sessions)) + '. See ' + join(LOGS_DIR,
-                                                                                   'initialize_graph.txt') + ' for more information.')
+                                                                                   'register_template.txt') + ' for more information.')
     print('\n')
     print('# --------- FI (JUMP-reg: graph initialization) --------- #')
     print('\n')

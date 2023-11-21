@@ -9,12 +9,36 @@ import json
 import shutil
 
 import nibabel as nib
-from skimage.transform import rescale
 import numpy as np
 import csv
 
 from utils.labels import *
 
+def print_title_script(title, args):
+    length_title = max(len(args.bids), len(title))
+    print('\n\n' + '#' * length_title)
+    if args.force is True:
+        print(title + '\n' + args.bids + '\nOVERWRITING existing files.')
+    else:
+        print(title + '\n' + args.bids + '\nonly on files where output is missing.')
+
+    if args.subjects is not None:
+        print('* Selected subjects: ')  # ', '.join(init_subject_list) + '.')
+        print('   ', end='', flush=True)
+        total_l = 3
+        for init_s in args.subjects:
+            if total_l + len(init_s) > length_title and init_s != args.subjects[-1]:
+                print(', \n')
+                print('   ', end='', flush=True)
+                total_l = 3
+
+            if total_l == 3:
+                print(init_s)
+            else:
+                print(', ' + init_s)
+
+            total_l += len(init_s)
+    print('#' * length_title)
 
 def write_json_derivatives(pixdim, volshape, filename, extra_kwargs={}):
     im_json = {

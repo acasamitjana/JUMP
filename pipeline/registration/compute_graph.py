@@ -10,6 +10,7 @@ from joblib import delayed, Parallel
 
 # project imports
 from src.jump_reg import *
+from utils.io_utils import print_title_script
 
 if __name__ == '__main__':
 
@@ -39,15 +40,9 @@ if __name__ == '__main__':
     num_cores = args.num_cores
     init_subject_list = args.subjects
     force_flag = args.force
-    print('\n\n########################')
-    if force_flag is True:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', OVERWRITING existing files.')
-    else:
-        print('Running JUMP registration over the dataset in ' + bids_dir + ', only on files where output is missing.')
 
-    if init_subject_list is not None:
-        print('   - Selected subjects: ' + ','.join(init_subject_list) + '.')
-    print('########################')
+    title = 'Running JUMP registration over the dataset in'
+    print_title_script(title, args)
 
     print('\nReading dataset.\n')
     db_file = join(dirname(bids_dir), 'BIDS-raw.db')

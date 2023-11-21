@@ -190,7 +190,7 @@ def register2MNI(refFile, inFile, outFile, affmat, warp):
 
     Parameters
     ---------------------------------------------------------------------------------
-    fslDir:     Full path of the bin-directory of FSL
+    refFile:    Full path to reference file(nii.gz)
     inFile:     Full path to the data file (nii.gz) which has to be registerd to MNI152 T1 2mm
     outFile:    Full path of the output file
     affmat:     Full path of the mat file describing the linear registration (if data is still in native space)
