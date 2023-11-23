@@ -57,12 +57,12 @@ def register_subject(subject, args):
 
         filepath_aff = join(seg_mni_dir_sbj, fname_prefix + '_space-' + template_str + '_desc-field_aff.npy')
         filepath_def = join(seg_mni_dir_sbj, fname_prefix + '_space-' + template_str + '_desc-field_nonlinear.nii.gz')
-        filepath_def_backward = join(seg_mni_dir_sbj, fname_prefix + '_space-' + 'IMAGE_desc-field_nonlinear.nii.gz')
+        filepath_def_backward = join(seg_mni_dir_sbj, fname_prefix + '_space-' + 'SESSION_desc-field_nonlinear.nii.gz')
         filepath_reg = join(seg_mni_dir_sbj, fname_prefix + '_space-' + template_str + '_T1w.nii.gz')
-        filepath_session_im = join(tmp_dir, fname_prefix + tp + '_space-SESSION_T1w.nii.gz')
-        filepath_session_seg = join(tmp_dir, fname_prefix + tp + '_space-SESSION_dseg.nii.gz')
-        filepath_imlinear = join(tmp_dir, fname_prefix + tp + '_imlinear.nii.gz')
-        filepath_seglinear = join(tmp_dir, fname_prefix + tp + '_seglinear.nii.gz')
+        filepath_session_im = join(tmp_dir, fname_prefix  + '_space-SESSION_T1w.nii.gz')
+        filepath_session_seg = join(tmp_dir, fname_prefix + '_space-SESSION_dseg.nii.gz')
+        filepath_imlinear = join(tmp_dir, fname_prefix + '_imlinear.nii.gz')
+        filepath_seglinear = join(tmp_dir, fname_prefix + '_seglinear.nii.gz')
 
         pdb.set_trace()
         if not exists(filepath_def) or not exists(filepath_def_backward) or force_flag:
@@ -126,7 +126,7 @@ def register_subject(subject, args):
                                                                             proxyatlas, M_ref)
 
             else:
-                print('[error] ' + template_str + ' atlast still not implemented. Skipping')
+                print('[error] ' + template_str + ' atlas still not implemented. Skipping')
                 exit()
 
             print('(2) computing nonlinear field', end='; ', flush=True)
@@ -212,7 +212,7 @@ def register_subject(subject, args):
             RAS_X = affine[0, 0] * II3 + affine[0, 1] * JJ3 + affine[0, 2] * KK3 + affine[0, 3]
             RAS_Y = affine[1, 0] * II3 + affine[1, 1] * JJ3 + affine[1, 2] * KK3 + affine[1, 3]
             RAS_Z = affine[2, 0] * II3 + affine[2, 1] * JJ3 + affine[2, 2] * KK3 + affine[2, 3]
-            img = nib.Nifti1Image(torch.stack([RAS_X, RAS_Y, RAS_Z], axis=-1).numpy().astype('float32'), R_aff)
+            img = nib.Nifti1Image(torch.stack([RAS_X, RAS_Y, RAS_Z], axis=-1).numpy().astype('float32'), flo_proxy.affine)
             nib.save(img, filepath_def_backward)
             print('done.')
 
@@ -244,7 +244,7 @@ if __name__ == '__main__':
     print('\n\n')
 
     labels_registration = os.path.join(repo_home, 'data', 'labels_classes_priors', 'label_list_registration.npy')
-    tmp_dir = '/tmp/smr_to_template/'
+    tmp_dir = '/tmp/JUMP_to_template/'
     if not exists(tmp_dir): os.makedirs(tmp_dir)
 
     title = 'Running JUMP registration over the dataset in'
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     print('Total failed subjects ' + str(len(failed_sessions)) + '. See ' + join(LOGS_DIR,
                                                                                    'register_template.txt') + ' for more information.')
     print('\n')
-    print('# --------- FI (JUMP-reg: graph initialization) --------- #')
+    print('# --------- FI (JUMP-reg: register to template) --------- #')
     print('\n')
 
 

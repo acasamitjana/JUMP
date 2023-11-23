@@ -1,4 +1,5 @@
 import os
+import pdb
 from os.path import join
 
 import numpy as np
@@ -325,7 +326,7 @@ def register2MNI(refFile, inFile, outFile, affmat, warp):
         img = nib.Nifti1Image(registered.numpy(), proxyref.affine)
         nib.save(img, outFile)
 
-def registerMNI2Image(refFile, inFile, outFile, affmat, warp):
+def registerMNI2Image(refFile, inFile, outFile, affmat, warp, aux_affmat=None):
     """ This function registers an image (or time-series of images) to MNI152 T1 2mm. If no affmat is defined, it only warps (i.e. it assumes that the data has been registerd to the structural scan associated with the warp-file already). If no warp is defined either, it only resamples the data to 2mm isotropic if needed (i.e. it assumes that the data has been registered to a MNI152 template). In case only an affmat file is defined, it assumes that the data has to be linearly registered to MNI152 (i.e. the user has a reason not to use non-linear registration on the data).
 
     Parameters
