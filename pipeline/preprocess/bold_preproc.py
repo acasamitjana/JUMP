@@ -1,5 +1,3 @@
-import pdb
-
 from setup import *
 
 from os import listdir, makedirs

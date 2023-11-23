@@ -1,3 +1,5 @@
+from setup import *
+
 import os
 import time
 from os import listdir, makedirs
@@ -13,7 +15,6 @@ from sklearn.linear_model import LinearRegression
 
 from utils import def_utils, io_utils, jump_utils
 from src.preprocessing import runICA, registerMNI2Image, register2MNI
-from setup import *
 
 class EmptyImage():
     def __init__(self, path):
@@ -40,9 +41,9 @@ def process_subject(subject, bids_loader, ica_maps, tmp_dir):
                                   extension='nii.gz', desc='icamaps', space='SESSION')
 
 
-        # if len(ica_mni) == 1 and len(ica_session) == 1 and not args.force:
-        #     print('[done] It has already been computed.')
-        #     continue
+        if len(ica_mni) == 1 and len(ica_session) == 1 and not args.force:
+            print('[done] It has already been computed.')
+            continue
 
         if len(ica_mni) > 1 or len(ica_session) > 1:
             print('[error] More than 1 file found. Probably has been computed using different names..')
@@ -117,7 +118,7 @@ def process_subject(subject, bids_loader, ica_maps, tmp_dir):
             subprocess.call(['rm', '-rf', join(tmp_dir, subject, 'warp.nii.gz')])
 
         print('')
-        if True:#(len(ica_session) == 0 or args.force) and args.subject_space:
+        if (len(ica_session) == 0 or args.force) and args.subject_space:
             print('     Processing @ SESSION space: ', end='', flush=True)
             def_IMAGE_file = bids_loader.get(subject=subject, session=session, space='IMAGE', desc='field',
                                              scope='session-mni', extension='nii.gz')
@@ -242,14 +243,12 @@ if __name__ == '__main__':
     for it_subject, subject in enumerate(subject_list):
         print(' * Subject: ' + str(subject) + '  -  ' + str(it_subject) + '/' + str(len(subject_list)))
         t_init = time.time()
-        mf = process_subject(subject, bids_loader, ica_maps, tmp_dir)
-        missing_files.extend(mf)
-        # try:
-        #     mf = process_subject(subject, bids_loader, ica_maps, tmp_dir)
-        #     missing_files.extend(mf)
-        # except:
-        #     mf = subject
-        #     missing_files.append(mf)
+        try:
+            mf = process_subject(subject, bids_loader, ica_maps, tmp_dir)
+            missing_files.extend(mf)
+        except:
+            mf = subject
+            missing_files.append(mf)
 
         print('   Total Elapsed time: ' + str(np.round(time.time() - t_init, 2)) + ' seconds.\n')
 
