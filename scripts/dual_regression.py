@@ -253,7 +253,7 @@ if __name__ == '__main__':
         print('   Total Elapsed time: ' + str(np.round(time.time() - t_init, 2)) + ' seconds.\n')
 
     f = open(join(LOGS_DIR, 'dual_regression.txt'), 'w')
-    f.write('Total unprocessed subjects: ' + str(len(missing_files)))
+    f.write('Total unprocessed subjects: ' + str(len(missing_files)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in missing_files]))
 
     print('\n')

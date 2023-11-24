@@ -280,7 +280,6 @@ if __name__ == '__main__':
     failed_sessions = []
     for it_subject, subject in enumerate(subject_list):
         print(' * Subject: ' + str(subject) + '  -  ' + str(it_subject) + '/' + str(len(subject_list)))
-
         t_init = time.time()
         try:
             fs = register_subject(subject, args)
@@ -291,7 +290,7 @@ if __name__ == '__main__':
         print('   Total Elapsed time: ' + str(np.round(time.time() - t_init, 2)) + ' seconds.')
 
     f = open(join(LOGS_DIR, 'register_template.txt'), 'w')
-    f.write('Total unprocessed subjects: ' + str(len(failed_sessions)))
+    f.write('Total unprocessed subjects: ' + str(len(failed_sessions)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in failed_sessions]))
 
     print('\n')

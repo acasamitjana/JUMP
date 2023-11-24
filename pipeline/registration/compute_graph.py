@@ -76,7 +76,7 @@ if __name__ == '__main__':
             print('Total computation time: ' + str(np.round(time.time() - t_init, 2)) + '\n')
 
     f = open(join(LOGS_DIR, 'compute_graph.txt'), 'w')
-    f.write('Total unprocessed subjects: ' + str(len(failed_subjects)))
+    f.write('Total unprocessed subjects: ' + str(len(failed_subjects)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in failed_subjects]))
 
     print('\n')

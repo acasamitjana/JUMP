@@ -297,7 +297,7 @@ if __name__ == '__main__':
         subprocess.call(['rm', '-rf', tmp_res_dir])
 
     f = open(join(LOGS_DIR, 'pet_preproc.txt'), 'w')
-    f.write('Total unprocessed files: ' + str(len(missing_files)))
+    f.write('Total unprocessed files: ' + str(len(missing_files)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in missing_files]))
 
     print('  Total failed subjects ' + str(len(missing_files)) + '. See ' + join(LOGS_DIR, 'pet_preproc.txt') + ' for more information.')

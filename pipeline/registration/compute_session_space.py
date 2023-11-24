@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
 
         f = open(join(LOGS_DIR, 'compute_session_space.txt'), 'w')
-        f.write('Total unprocessed subjects: ' + str(len(failed_sessions)))
+        f.write('Total unprocessed subjects: ' + str(len(failed_sessions)) + '\n')
         f.write(','.join(['\'' + s + '\'' for s in failed_sessions]))
 
         print('\n')

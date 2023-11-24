@@ -446,9 +446,9 @@ if __name__ == '__main__':
         subprocess.call(['rm', '-rf', tmp_field_dir])
 
     f = open(join(LOGS_DIR, 'bold_preproc.txt'), 'w')
-    f.write('Total unprocessed files: ' + str(len(missing_files)))
+    f.write('Total unprocessed files: ' + str(len(missing_files)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in missing_files]))
-    f.write('Total group ICA sessions: ' + str(len(final_gica_files)))
+    f.write('Total group ICA sessions: ' + str(len(final_gica_files)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in final_gica_files]))
 
     print('  Total group ICA sessions: ' + str(len(final_gica_files)), end='. ', flush=True)

@@ -252,7 +252,7 @@ if __name__ == '__main__':
 
     subprocess.call(['rm', '-rf', tmp_dir])
     f = open(join(LOGS_DIR, 'anat_preproc.txt'), 'w')
-    f.write('Total unprocessed files: ' + str(len(failed_subjects)))
+    f.write('Total unprocessed files: ' + str(len(failed_subjects)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in failed_subjects]))
 
     print('  Total failed subjects ' + str(len(failed_subjects)) + '. See ' + join(LOGS_DIR, 'anat_preproc.txt') + ' for more information.' )

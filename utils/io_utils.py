@@ -15,12 +15,12 @@ import csv
 from utils.labels import *
 
 def print_title_script(title, args):
-    length_title = max(len(args.bids), len(title))
+    length_title = max(len('BIDS_DIR: ' + args.bids), len(title))
     print('\n\n' + '#' * length_title)
     if args.force is True:
-        print(title + '\n' + args.bids + '\nOVERWRITING existing files.')
+        print(title + '\nBIDS_DIR: ' + args.bids + '\nOVERWRITING existing files.')
     else:
-        print(title + '\n' + args.bids + '\nonly on files where output is missing.')
+        print(title + '\nBIDS_DIR: ' + args.bids + '\nonly on files where output is missing.')
 
     if args.subjects is not None:
         print('* Selected subjects: ')  # ', '.join(init_subject_list) + '.')

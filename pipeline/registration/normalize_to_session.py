@@ -1,14 +1,20 @@
 from setup import *
 
+import time
+import copy
 import subprocess
 from argparse import ArgumentParser
 from joblib import delayed, Parallel
 
 import bids
+import nibabel as nib
+import numpy as np
+from scipy.ndimage import gaussian_filter
 
-from src.jump_reg import *
+# from src.jump_reg import *
 from utils.io_utils import print_title_script
-
+from utils.def_utils import vol_resample
+from utils.fn_utils import one_hot_encoding
 
 def compute_subject_template(subject, verbose=True):
     aff_dict = {'subject': subject, 'desc': 'aff', 'extension': 'npy', 'scope': 'jump-reg'}
@@ -170,9 +176,9 @@ def compute_subject_template(subject, verbose=True):
 if __name__ == 'main':
 
     print('\n\n\n\n\n')
-    print('# ------------------------------------ #')
-    print('# JUMP registration: compute template  #')
-    print('# ------------------------------------ #')
+    print('# ----------------------------------------- #')
+    print('# JUMP registration: normalize to template  #')
+    print('# ----------------------------------------- #')
     print('\n\n')
 
     parser = ArgumentParser(description="JUMP-registration: compute template", epilog='\n')
@@ -205,15 +211,30 @@ if __name__ == 'main':
     bids_loader.add_derivatives(DIR_PIPELINES['jump-reg'])
     subject_list = bids_loader.get_subjects() if init_subject_list is None else init_subject_list
 
+    failed_sessions = []
     if num_cores > 1:
         VERBOSE = False
         results = Parallel(n_jobs=num_cores)(delayed(compute_subject_template)(subject, verbose=True) for subject in subject_list)
     else:
         VERBOSE = True
         for it_subject, subject in enumerate(subject_list):
-            print('Subject: ' + subject)
-            compute_subject_template(subject, verbose=True)
+            print(' * Subject: ' + str(subject) + '  -  ' + str(it_subject) + '/' + str(len(subject_list)))
+            t_init = time.time()
+            try:
+                compute_subject_template(subject, verbose=True)
+            except:
+                failed_sessions.append(subject)
+
+        print('   Total Elapsed time: ' + str(np.round(time.time() - t_init, 2)) + ' seconds.')
 
 
+    f = open(join(LOGS_DIR, 'normalize_to_session.txt'), 'w')
+    f.write('Total unprocessed subjects: ' + str(len(failed_sessions)) + '\n')
+    f.write(','.join(['\'' + s + '\'' for s in failed_sessions]))
 
-
+    print('\n')
+    print('Total failed subjects ' + str(len(failed_sessions)) + '. See ' +
+          join(LOGS_DIR, 'normalize_to_session.txt') + ' for more information.')
+    print('\n')
+    print('# --------- FI (JUMP-reg: normalize to session space) --------- #')
+    print('\n')

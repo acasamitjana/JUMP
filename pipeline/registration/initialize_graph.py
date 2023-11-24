@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
 
     f = open(join(LOGS_DIR, 'initialize_graph.txt'), 'w')
-    f.write('Total unprocessed subjects: ' + str(len(failed_subjects)))
+    f.write('Total unprocessed subjects: ' + str(len(failed_subjects)) + '\n')
     f.write(','.join(['\'' + s + '\'' for s in failed_subjects]))
 
     print('\n')
